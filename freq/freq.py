@@ -76,9 +76,10 @@ def make_poly3d(filename, slices=100, frequencies=30):
     cc = lambda arg: colorConverter.to_rgba(arg, alpha=0.6)
 
     verts = []
-    zs = np.arange(0, slices - 1)
+    zs = np.arange(0, slices)
     max_z = 0
     min_z = 0
+    bar_width = (reduced_freqs.max() - reduced_freqs.min()) / frequencies
     for z in zs:
         offset = frames_per_slice * z
         slice_data = single_channel[offset:offset + frames_per_slice]
@@ -89,14 +90,15 @@ def make_poly3d(filename, slices=100, frequencies=30):
         max_z = max(response.max(), max_z)
         min_z = min(response.min(), min_z)
         reduced_ps = reshape_array(response, frequencies)
-        reduced_ps[0], reduced_ps[-1] = 0,0
-        verts.append(list(zip(reduced_freqs, reduced_ps)))
+        print("x: {0}, y: {1}".format(len(reduced_freqs), len(reduced_ps)))
+        ax.bar(reduced_freqs, reduced_ps, z, width=bar_width, align='center', alpha=0.5, zdir='y')
+        #verts.append(list(zip(reduced_freqs, reduced_ps)))
     #print(verts[1])
     print(len(verts))
-    poly = PolyCollection(verts, facecolors = [cc('r'), cc('g'), cc('b'),
-                                               cc('y')])
-    poly.set_alpha(0.7)
-    ax.add_collection3d(poly, zs=zs, zdir='y')
+    #poly = PolyCollection(verts, facecolors = [cc('r'), cc('g'), cc('b'),
+    #                                           cc('y')])
+    #poly.set_alpha(0.7)
+    #ax.add_collection3d(poly, zs=zs, zdir='y')
 
     ax.set_xlabel('Frequency')
     ax.set_xlim3d(reduced_freqs.min(), reduced_freqs.max())

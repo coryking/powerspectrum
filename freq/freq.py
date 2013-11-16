@@ -82,14 +82,17 @@ def make_poly3d(filename, slices=100, frequencies=30):
     for z in zs:
         offset = frames_per_slice * z
         slice_data = single_channel[offset:offset + frames_per_slice]
-        ps = np.abs(np.fft.fft(slice_data))**2
-        ps_adj = np.log10(ps[idx][mid:])
-        max_z = max(ps_adj.max(), max_z)
-        min_z = min(ps_adj.min(), min_z)
-        #ps_adj[0], ps_adj[-1] = 0, 0
-        reduced_ps = reshape_array(ps_adj, frequencies)
+        A = np.fft.fft(slice_data) /25.5
+        mag = np.abs(np.fft.fftshift(A))
+        response = 20 * np.log10(mag[mid:])
+        
+        max_z = max(response.max(), max_z)
+        min_z = min(response.min(), min_z)
+        reduced_ps = reshape_array(response, frequencies)
+        reduced_ps[0], reduced_ps[-1] = 0,0
         verts.append(list(zip(reduced_freqs, reduced_ps)))
     #print(verts[1])
+    print(len(verts))
     poly = PolyCollection(verts, facecolors = [cc('r'), cc('g'), cc('b'),
                                                cc('y')])
     poly.set_alpha(0.7)

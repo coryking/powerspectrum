@@ -68,7 +68,7 @@ def make_heatmap(filename, slices=1000):
         ps = np.abs(np.fft.fft(slice_data))**2
         ps_adj = np.log10(ps[idx][mid:])
         for freq in half_freqs:
-            print(ps_adj[freq])
+            print("x: {0}, y: {1}, z: {2}".format(slice, freq, ps_adj[freq]))
             z[slice][freq] = ps_adj[freq]
     plt.clf()
     plt.pcolormesh(x, half_freqs, z)
@@ -79,5 +79,6 @@ def load_and_plot(filename):
     frames = get_channel(data)
     pb = get_powerband(frames, data['samplerate'])
     plt.clf()
+    print("x: {0}, y: {1}".format(pb['freq'], pb['power']))
     plt.plot(pb['freq'], pb['power'])
     plt.show()

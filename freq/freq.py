@@ -1,5 +1,7 @@
 from __future__ import division
 
+import os
+
 import numpy as np
 import matplotlib.pyplot as plt
 import scikits.audiolab as al
@@ -70,24 +72,24 @@ def make_poly3d(filename, slices=100, frequencies=30):
     mid = len(idx)/2
     half_freqs = freqs[idx][mid:]
     reduced_freqs = reshape_array(half_freqs, frequencies)
-    xs = reshape_array(half_freqs, frequencies)
-    ys = np.arange(0, slices)
-    zs = np.zeros([len(ys), len(xs)])
+    ys = reshape_array(half_freqs, frequencies)
+    xs = np.arange(0, slices)
+    zs = np.zeros([len(xs), len(ys)])
     xxs, yys = np.meshgrid(xs,ys)
-    for y in range(0, slices):
-        offset = frames_per_slice * y
+    for x in range(0, slices):
+        offset = frames_per_slice * x
         slice_data = single_channel[offset:offset + frames_per_slice]
         A = np.fft.fft(slice_data) /25.5
         mag = np.abs(np.fft.fftshift(A))
         response = 20 * np.log10(mag[mid:])
         reduced_ps = reshape_array(response, frequencies)
-        zs[y] = reduced_ps
+        zs[x] = reduced_ps
     plt.clf()
 
     print('yys: {0}, xxs: {1}, zs: {2}'.format(yys.shape, xxs.shape, zs.shape))
-    plt.pcolormesh(xxs,yys,zs)
+    plt.pcolormesh(xxs,yys,zs.transpose())
     plt.axis([xs.min(), xs.max(), ys.min(), ys.max()])
-    plt.title('pcolormesh with levels')
+    plt.title('Specrum for {0}'.format(os.path.basename(filename)))
     #ax.set_xlabel('Frequency')
     #ax.set_xlim3d(reduced_freqs.min(), reduced_freqs.max())
     #ax.set_ylabel('Slices')

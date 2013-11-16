@@ -72,21 +72,22 @@ def make_poly3d(filename, slices=100, frequencies=30):
     reduced_freqs = reshape_array(half_freqs, frequencies)
     xs = reshape_array(half_freqs, frequencies)
     ys = np.arange(0, slices)
-    zs = np.zeros([len(xs), len(ys)])
+    zs = np.zeros([len(ys), len(xs)])
     xxs, yys = np.meshgrid(xs,ys)
-
-    for z in range(0, slices):
-        offset = frames_per_slice * z
+    for y in range(0, slices):
+        offset = frames_per_slice * y
         slice_data = single_channel[offset:offset + frames_per_slice]
         A = np.fft.fft(slice_data) /25.5
         mag = np.abs(np.fft.fftshift(A))
         response = 20 * np.log10(mag[mid:])
         reduced_ps = reshape_array(response, frequencies)
-        print("x: {0}, y: {1}".format(len(reduced_freqs), len(reduced_ps)))
-        zs[z] = reduced_ps
-
+        zs[y] = reduced_ps
     plt.clf()
+
+    print('yys: {0}, xxs: {1}, zs: {2}'.format(yys.shape, xxs.shape, zs.shape))
     plt.pcolormesh(xxs,yys,zs)
+    plt.axis([xs.min(), xs.max(), ys.min(), ys.max()])
+    plt.title('pcolormesh with levels')
     #ax.set_xlabel('Frequency')
     #ax.set_xlim3d(reduced_freqs.min(), reduced_freqs.max())
     #ax.set_ylabel('Slices')

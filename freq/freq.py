@@ -62,12 +62,14 @@ def make_heatmap(filename, slices=1000):
     mid = len(idx)/2
     half_freqs = freqs[idx][mid:]
 
-    z = np.zeros([len(x), len(half_freqs)])
+    z = np.zeros([len(x), len(half_freqs),2])
     for slice in x:
         slice_data = get_frame_slice(data, frames_per_slice, frames_per_slice * slice)
-        ps = np.log10(np.abs(np.fft.fft(slice_data))**2)[idx][mid:]
+        ps = np.abs(np.fft.fft(slice_data))**2
+        ps_adj = np.log10(ps[idx][mid:])
         for freq in half_freqs:
-            z[slice][freq] = ps[freq]
+            print(ps_adj[freq])
+            z[slice][freq] = ps_adj[freq]
     plt.clf()
     plt.pcolormesh(x, half_freqs, z)
     plt.show()

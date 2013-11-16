@@ -70,42 +70,29 @@ def make_poly3d(filename, slices=100, frequencies=30):
     mid = len(idx)/2
     half_freqs = freqs[idx][mid:]
     reduced_freqs = reshape_array(half_freqs, frequencies)
-    fig = plt.figure()
-    ax = fig.gca(projection='3d')
+    xs = reshape_array(half_freqs, frequencies)
+    ys = np.arange(0, slices)
+    zs = np.zeros([len(xs), len(ys)])
+    xxs, yys = np.meshgrid(xs,ys)
 
-    cc = lambda arg: colorConverter.to_rgba(arg, alpha=0.6)
-
-    verts = []
-    zs = np.arange(0, slices)
-    max_z = 0
-    min_z = 0
-    bar_width = (reduced_freqs.max() - reduced_freqs.min()) / frequencies
-    for z in zs:
+    for z in range(0, slices):
         offset = frames_per_slice * z
         slice_data = single_channel[offset:offset + frames_per_slice]
         A = np.fft.fft(slice_data) /25.5
         mag = np.abs(np.fft.fftshift(A))
         response = 20 * np.log10(mag[mid:])
-        
-        max_z = max(response.max(), max_z)
-        min_z = min(response.min(), min_z)
         reduced_ps = reshape_array(response, frequencies)
         print("x: {0}, y: {1}".format(len(reduced_freqs), len(reduced_ps)))
-        ax.bar(reduced_freqs, reduced_ps, z, width=bar_width, align='center', alpha=0.5, zdir='y')
-        #verts.append(list(zip(reduced_freqs, reduced_ps)))
-    #print(verts[1])
-    print(len(verts))
-    #poly = PolyCollection(verts, facecolors = [cc('r'), cc('g'), cc('b'),
-    #                                           cc('y')])
-    #poly.set_alpha(0.7)
-    #ax.add_collection3d(poly, zs=zs, zdir='y')
+        zs[z] = reduced_ps
 
-    ax.set_xlabel('Frequency')
-    ax.set_xlim3d(reduced_freqs.min(), reduced_freqs.max())
-    ax.set_ylabel('Slices')
-    ax.set_ylim3d(-1, slices)
-    ax.set_zlabel('Power')
-    ax.set_zlim3d(min_z, max_z)
+    plt.clf()
+    plt.pcolormesh(xxs,yys,zs)
+    #ax.set_xlabel('Frequency')
+    #ax.set_xlim3d(reduced_freqs.min(), reduced_freqs.max())
+    #ax.set_ylabel('Slices')
+    #ax.set_ylim3d(-1, slices)
+    #ax.set_zlabel('Power')
+    #ax.set_zlim3d(min_z, max_z)
     plt.show()
 
 def make_heatmap(filename, slices=1000):

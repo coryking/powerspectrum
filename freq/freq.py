@@ -12,7 +12,7 @@ def get_audio_data(filename):
     data = file.read_frames(file.nframes)
     data_hash =  {
         "frames": data,
-        "nframes": file.nframes
+        "nframes": file.nframes,
         "samplerate": file.samplerate,
         "channels": file.channels
     }
@@ -54,14 +54,15 @@ def get_powerband(frames, samplerate):
 
 def make_heatmap(filename, slices=1000):
     data = get_audio_data(filename)
-    frames_per_slice = data['nframes'] / slices
+    frames_per_slice = int(data['nframes'] / slices)
+    print(frames_per_slice)
     x = np.arange(0, slices - 1)
-    z = []
     freqs = get_freqs(frames_per_slice, data['samplerate'])
     idx = np.argsort(freqs)
     mid = len(idx)/2
-    half_freqs = freqs[mid:]
+    half_freqs = freqs[idx][mid:]
 
+    z = np.zeros([len(x), len(half_freqs)])
     for slice in x:
         slice_data = get_frame_slice(data, frames_per_slice, frames_per_slice * slice)
         ps = np.log10(np.abs(np.fft.fft(slice_data))**2)[idx][mid:]

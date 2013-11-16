@@ -40,7 +40,6 @@ def get_channel(data, channel=0):
 def get_freqs(frame_count, samplerate):
     return np.fft.fftfreq(frame_count, 1. / samplerate)
 
-
 def get_powerband(frames, samplerate):
     ps = np.abs(np.fft.fft(frames))**2
 
@@ -54,8 +53,13 @@ def get_powerband(frames, samplerate):
         'freq': freqs[idx][mid:],
         'power': np.log10(ps[idx][mid:])
     }
+def reshape_array(data, frequencies):
+    bw = len(data) / frequencies
+    resized_data = data.copy()
+    resized_data.resize([frequencies, bw])
+    return np.average(resized_data, axis=1)
 
-def make_poly3d(filename, slices=100):
+def make_poly3d(filename, slices=100, frequencies=30):
     data = get_audio_data(filename)
     single_channel = get_channel(data)
     frames_per_slice = int(data['nframes'] / slices)
@@ -65,7 +69,7 @@ def make_poly3d(filename, slices=100):
     idx = np.argsort(freqs)
     mid = len(idx)/2
     half_freqs = freqs[idx][mid:]
-
+    reduced_freqs = reshape_array(half_freqs, frequencies)
     fig = plt.figure()
     ax = fig.gca(projection='3d')
 
@@ -82,19 +86,20 @@ def make_poly3d(filename, slices=100):
         ps_adj = np.log10(ps[idx][mid:])
         max_z = max(ps_adj.max(), max_z)
         min_z = min(ps_adj.min(), min_z)
-        ps_adj[0], ps_adj[-1] = 0, 0
-        verts.append(list(zip(half_freqs, ps_adj)))
+        #ps_adj[0], ps_adj[-1] = 0, 0
+        reduced_ps = reshape_array(ps_adj, frequencies)
+        verts.append(list(zip(reduced_freqs, reduced_ps)))
     #print(verts[1])
-    poly = PolyCollection(verts)#, facecolors = [cc('r'), cc('g'), cc('b'),
-                                #               cc('y')])
+    poly = PolyCollection(verts, facecolors = [cc('r'), cc('g'), cc('b'),
+                                               cc('y')])
     poly.set_alpha(0.7)
     ax.add_collection3d(poly, zs=zs, zdir='y')
 
-    ax.set_xlabel('X')
-    ax.set_xlim3d(0, half_freqs.max())
-    ax.set_ylabel('Y')
+    ax.set_xlabel('Frequency')
+    ax.set_xlim3d(reduced_freqs.min(), reduced_freqs.max())
+    ax.set_ylabel('Slices')
     ax.set_ylim3d(-1, slices)
-    ax.set_zlabel('Z')
+    ax.set_zlabel('Power')
     ax.set_zlim3d(min_z, max_z)
     plt.show()
 

@@ -6,6 +6,9 @@ import scikits.audiolab as al
 
 from matplotlib.colors import BoundaryNorm
 from matplotlib.ticker import MaxNLocator
+from mpl_toolkits.mplot3d import Axes3D
+from matplotlib.collections import PolyCollection
+from matplotlib.colors import colorConverter
 
 def get_audio_data(filename):
     file = al.Sndfile(filename)
@@ -46,11 +49,54 @@ def get_powerband(frames, samplerate):
     idx = np.argsort(freqs)
 
     mid = len(idx)/2
-    
+    print("freq: {0}, ps: {1}".format(len(idx), len(ps)))
     return {
         'freq': freqs[idx][mid:],
         'power': np.log10(ps[idx][mid:])
     }
+
+def make_poly3d(filename, slices=100):
+    data = get_audio_data(filename)
+    single_channel = get_channel(data)
+    frames_per_slice = int(data['nframes'] / slices)
+    print(frames_per_slice)
+
+    freqs = get_freqs(frames_per_slice, data['samplerate'])
+    idx = np.argsort(freqs)
+    mid = len(idx)/2
+    half_freqs = freqs[idx][mid:]
+
+    fig = plt.figure()
+    ax = fig.gca(projection='3d')
+
+    cc = lambda arg: colorConverter.to_rgba(arg, alpha=0.6)
+
+    verts = []
+    zs = np.arange(0, slices - 1)
+    max_z = 0
+    min_z = 0
+    for z in zs:
+        offset = frames_per_slice * z
+        slice_data = single_channel[offset:offset + frames_per_slice]
+        ps = np.abs(np.fft.fft(slice_data))**2
+        ps_adj = np.log10(ps[idx][mid:])
+        max_z = max(ps_adj.max(), max_z)
+        min_z = min(ps_adj.min(), min_z)
+        ps_adj[0], ps_adj[-1] = 0, 0
+        verts.append(list(zip(half_freqs, ps_adj)))
+    #print(verts[1])
+    poly = PolyCollection(verts)#, facecolors = [cc('r'), cc('g'), cc('b'),
+                                #               cc('y')])
+    poly.set_alpha(0.7)
+    ax.add_collection3d(poly, zs=zs, zdir='y')
+
+    ax.set_xlabel('X')
+    ax.set_xlim3d(0, half_freqs.max())
+    ax.set_ylabel('Y')
+    ax.set_ylim3d(-1, slices)
+    ax.set_zlabel('Z')
+    ax.set_zlim3d(min_z, max_z)
+    plt.show()
 
 def make_heatmap(filename, slices=1000):
     data = get_audio_data(filename)

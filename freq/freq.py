@@ -38,6 +38,13 @@ def get_channel(data, channel=0):
         return data['frames'][:,channel]
     else:
         return data['frames']
+def get_seconds(nframes, samplerate):
+    return nframes / samplerate
+def get_frames_per_sample(nframes, samplerate, samples_per_second = 10.):
+    """Number of samples for each slice"""
+    return int(samplerate / samples_per_second)
+def get_total_samples(nframes, samplerate, samples_per_second = 10.):
+    return int(samples_per_second * (nframes / samplerate))
 
 def get_freqs(frame_count, samplerate):
     return np.fft.fftfreq(frame_count, 1. / samplerate)
@@ -61,10 +68,11 @@ def reshape_array(data, frequencies):
     resized_data.resize([frequencies, bw])
     return np.average(resized_data, axis=1)
 
-def make_poly3d(filename, slices=100, frequencies=30):
+def make_poly3d(filename, samples_per_second=10., frequencies=30):
     data = get_audio_data(filename)
     single_channel = get_channel(data)
-    frames_per_slice = int(data['nframes'] / slices)
+    slices = get_total_samples(data['nframes'], data['samplerate'], samples_per_second)
+    frames_per_slice = get_frames_per_sample(data['nframes'], data['samplerate'], samples_per_second)
     print(frames_per_slice)
 
     freqs = get_freqs(frames_per_slice, data['samplerate'])
@@ -72,8 +80,10 @@ def make_poly3d(filename, slices=100, frequencies=30):
     mid = len(idx)/2
     half_freqs = freqs[idx][mid:]
     reduced_freqs = reshape_array(half_freqs, frequencies)
+    total_seconds = get_seconds(data['nframes'], data['samplerate'])
+    print("Total seconds: %s" % total_seconds)
     ys = reshape_array(half_freqs, frequencies)
-    xs = np.arange(0, slices)
+    xs = np.fromfunction(lambda i: total_seconds * i/slices, [slices] )#np.arange(0, slices)
     zs = np.zeros([len(xs), len(ys)])
     xxs, yys = np.meshgrid(xs,ys)
     for x in range(0, slices):

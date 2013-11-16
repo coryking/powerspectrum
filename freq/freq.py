@@ -12,15 +12,18 @@ def get_audio_data(filename):
     data = file.read_frames(file.nframes)
     data_hash =  {
         "frames": data,
+        "nframes": file.nframes
         "samplerate": file.samplerate,
         "channels": file.channels
     }
     file.close()
     return data_hash
 
+def get_frame_slice(data, frames, offset=0):
+    return data['frames'][offset:offset+frames]
 def get_slice(data, frames, offset=0):
     return {
-        "frames": data['frames'][offset:offset+frames],
+        "frames": get_frame_slice(data, frames,offset),
         "samplerate": data['samplerate'],
         "channels": data['channels']
     }
@@ -30,6 +33,10 @@ def get_channel(data, channel=0):
         return data['frames'][:,channel]
     else:
         return data['frames']
+
+def get_freqs(frame_count, samplerate):
+    return np.fft.fftfreq(frame_count, 1. / samplerate)
+
 
 def get_powerband(frames, samplerate):
     ps = np.abs(np.fft.fft(frames))**2
@@ -44,6 +51,25 @@ def get_powerband(frames, samplerate):
         'freq': freqs[idx][mid:],
         'power': np.log10(ps[idx][mid:])
     }
+
+def make_heatmap(filename, slices=1000):
+    data = get_audio_data(filename)
+    frames_per_slice = data['nframes'] / slices
+    x = np.arange(0, slices - 1)
+    z = []
+    freqs = get_freqs(frames_per_slice, data['samplerate'])
+    idx = np.argsort(freqs)
+    mid = len(idx)/2
+    half_freqs = freqs[mid:]
+
+    for slice in x:
+        slice_data = get_frame_slice(data, frames_per_slice, frames_per_slice * slice)
+        ps = np.log10(np.abs(np.fft.fft(slice_data))**2)[idx][mid:]
+        for freq in half_freqs:
+            z[slice][freq] = ps[freq]
+    plt.clf()
+    plt.pcolormesh(x, half_freqs, z)
+    plt.show()
 
 def load_and_plot(filename):
     data = get_audio_data(filename)

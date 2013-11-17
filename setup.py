@@ -9,5 +9,11 @@ setuptools.setup(
     keywords = "example documentation tutorial",
     url = "http://packages.python.org/an_example_pypi_project",
     packages=['freq'],
+    install_requires=['numpy', 'matplotlib', 'scikits.audiolab'],
+    entry_points={
+            'console_scripts': [
+                'plot-spectrum=freq.freq:cli',
+            ]
+    },
 
 )

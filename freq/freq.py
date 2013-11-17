@@ -10,7 +10,6 @@ import scikits.audiolab as al
 
 from matplotlib.colors import BoundaryNorm
 from matplotlib.ticker import MaxNLocator
-from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.collections import PolyCollection
 from matplotlib.colors import colorConverter
 
@@ -109,8 +108,8 @@ def make_heatmap(filename, samples_per_second=10., frequencies=30):
 def cli():
     parser = argparse.ArgumentParser(description='Do some badass spectral analysis.',
                             formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument('-s', '--samples-sec', default=10., type=float, help="Number of samples to take per second.  Higher = more resolution.  Default: %(default)s")
-    parser.add_argument('-f', '--frequencies', default=30, type=int, help="Number of frequency bands to measure.  More is better.  Default: %(default)s")
+    parser.add_argument('-s', '--samples-sec', default=15., type=float, help="Number of samples to take per second.  Higher = more resolution.  Default: %(default)s")
+    parser.add_argument('-f', '--frequencies', default=300, type=int, help="Number of frequency bands to measure.  More is better.  Default: %(default)s")
     parser.add_argument('file', help='File to load')
     options = parser.parse_args()
     

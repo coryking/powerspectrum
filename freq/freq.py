@@ -69,7 +69,7 @@ def reshape_array(data, frequencies):
     resized_data.resize([frequencies, bw])
     return np.average(resized_data, axis=1)
 
-def make_heatmap(filename, samples_per_second=10., frequencies=30):
+def make_heatmap(filename, samples_per_second=10.):
     data = get_audio_data(filename)
     single_channel = get_channel(data)
     slices = get_total_samples(data['nframes'], data['samplerate'], samples_per_second)
@@ -79,12 +79,10 @@ def make_heatmap(filename, samples_per_second=10., frequencies=30):
     freqs = get_freqs(frames_per_slice, data['samplerate'])
     idx = np.argsort(freqs)
     mid = len(idx)/2
-    half_freqs = freqs[idx][mid:]
-    reduced_freqs = reshape_array(half_freqs, frequencies)
+    ys = freqs[idx][mid:]
     total_seconds = get_seconds(data['nframes'], data['samplerate'])
     print("Total seconds: %s" % total_seconds)
-    ys = reshape_array(half_freqs, frequencies)
-    xs = np.fromfunction(lambda i: total_seconds * i/slices, [slices] )#np.arange(0, slices)
+    xs = np.fromfunction(lambda i: total_seconds * i/slices, [slices] )
     zs = np.zeros([len(xs), len(ys)])
     xxs, yys = np.meshgrid(xs,ys)
     for x in range(0, slices):
@@ -93,7 +91,7 @@ def make_heatmap(filename, samples_per_second=10., frequencies=30):
         A = np.fft.fft(slice_data) /25.5
         mag = np.abs(np.fft.fftshift(A))
         response = 20 * np.log10(mag[mid:])
-        reduced_ps = reshape_array(response, frequencies)
+        reduced_ps = response
         zs[x] = reduced_ps
     plt.clf()
 
@@ -109,11 +107,10 @@ def cli():
     parser = argparse.ArgumentParser(description='Do some badass spectral analysis.',
                             formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('-s', '--samples-sec', default=15., type=float, help="Number of samples to take per second.  Higher = more resolution.  Default: %(default)s")
-    parser.add_argument('-f', '--frequencies', default=300, type=int, help="Number of frequency bands to measure.  More is better.  Default: %(default)s")
     parser.add_argument('file', help='File to load')
     options = parser.parse_args()
     
-    make_heatmap(options.file, options.samples_sec, options.frequencies)
+    make_heatmap(options.file, options.samples_sec)
     
 if __name__ == '__main__':
     cli()

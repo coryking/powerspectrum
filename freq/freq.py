@@ -11,7 +11,7 @@ import scikits.audiolab as al
 from matplotlib.colors import BoundaryNorm
 from matplotlib.ticker import MaxNLocator
 from matplotlib.collections import PolyCollection
-from matplotlib.colors import colorConverter
+from matplotlib.colors import colorConverter, from_levels_and_colors
 
 def get_audio_data(filename):
     file = al.Sndfile(filename)
@@ -69,7 +69,7 @@ def reshape_array(data, frequencies):
     resized_data.resize([frequencies, bw])
     return np.average(resized_data, axis=1)
 
-def make_heatmap(filename, samples_per_second=10.):
+def make_heatmap(filename, samples_per_second=10., colormap=None):
     data = get_audio_data(filename)
     single_channel = get_channel(data)
     slices = get_total_samples(data['nframes'], data['samplerate'], samples_per_second)
@@ -88,7 +88,7 @@ def make_heatmap(filename, samples_per_second=10.):
     for x in range(0, slices):
         offset = frames_per_slice * x
         slice_data = single_channel[offset:offset + frames_per_slice]
-        A = np.fft.fft(slice_data) /25.5
+        A = np.fft.fft(slice_data) ** 2 #/25.5
         mag = np.abs(np.fft.fftshift(A))
         response = 20 * np.log10(mag[mid:])
         reduced_ps = response
@@ -96,7 +96,8 @@ def make_heatmap(filename, samples_per_second=10.):
     plt.clf()
 
     print('yys: {0}, xxs: {1}, zs: {2}'.format(yys.shape, xxs.shape, zs.shape))
-    plt.pcolormesh(xxs,yys,zs.transpose())
+    nice_cmap = plt.get_cmap(colormap)
+    plt.pcolormesh(xxs,yys,zs.transpose(), cmap=nice_cmap)
     plt.axis([xs.min(), xs.max(), ys.min(), ys.max()])
     plt.title('Spectrum for {0}'.format(os.path.basename(filename)))
     plt.ylabel('Frequency (Hz)')
@@ -107,10 +108,11 @@ def cli():
     parser = argparse.ArgumentParser(description='Do some badass spectral analysis.',
                             formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('-s', '--samples-sec', default=15., type=float, help="Number of samples to take per second.  Higher = more resolution.  Default: %(default)s")
+    parser.add_argument('-c', '--colormap', default='spectral', help='Pick your color map')
     parser.add_argument('file', help='File to load')
     options = parser.parse_args()
     
-    make_heatmap(options.file, options.samples_sec)
+    make_heatmap(options.file, options.samples_sec, colormap=options.colormap)
     
 if __name__ == '__main__':
     cli()

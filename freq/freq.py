@@ -8,6 +8,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import scikits.audiolab as al
 
+import matplotlib.cm as cm
 from matplotlib.colors import BoundaryNorm
 from matplotlib.ticker import MaxNLocator
 from matplotlib.collections import PolyCollection
@@ -108,7 +109,7 @@ def cli():
     parser = argparse.ArgumentParser(description='Do some badass spectral analysis.',
                             formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('-s', '--samples-sec', default=15., type=float, help="Number of samples to take per second.  Higher = more resolution.  Default: %(default)s")
-    parser.add_argument('-c', '--colormap', default='spectral', help='Pick your color map')
+    parser.add_argument('-c', '--colormap', choices=[m for m in cm.datad.keys() if not m.endswith("_r")], default='gist_heat', help='Pick your color map')
     parser.add_argument('file', help='File to load')
     options = parser.parse_args()
     

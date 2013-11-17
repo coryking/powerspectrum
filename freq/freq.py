@@ -99,13 +99,9 @@ def make_poly3d(filename, samples_per_second=10., frequencies=30):
     print('yys: {0}, xxs: {1}, zs: {2}'.format(yys.shape, xxs.shape, zs.shape))
     plt.pcolormesh(xxs,yys,zs.transpose())
     plt.axis([xs.min(), xs.max(), ys.min(), ys.max()])
-    plt.title('Specrum for {0}'.format(os.path.basename(filename)))
-    #ax.set_xlabel('Frequency')
-    #ax.set_xlim3d(reduced_freqs.min(), reduced_freqs.max())
-    #ax.set_ylabel('Slices')
-    #ax.set_ylim3d(-1, slices)
-    #ax.set_zlabel('Power')
-    #ax.set_zlim3d(min_z, max_z)
+    plt.title('Spectrum for {0}'.format(os.path.basename(filename)))
+    plt.ylabel('Frequency (Hz)')
+    plt.xlabel('Time (sec)')
     plt.show()
 
 def make_heatmap(filename, slices=1000):

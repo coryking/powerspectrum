@@ -2,6 +2,8 @@ from __future__ import division
 
 import os
 
+import argparse
+
 import numpy as np
 import matplotlib.pyplot as plt
 import scikits.audiolab as al
@@ -68,7 +70,7 @@ def reshape_array(data, frequencies):
     resized_data.resize([frequencies, bw])
     return np.average(resized_data, axis=1)
 
-def make_poly3d(filename, samples_per_second=10., frequencies=30):
+def make_heatmap(filename, samples_per_second=10., frequencies=30):
     data = get_audio_data(filename)
     single_channel = get_channel(data)
     slices = get_total_samples(data['nframes'], data['samplerate'], samples_per_second)
@@ -104,33 +106,15 @@ def make_poly3d(filename, samples_per_second=10., frequencies=30):
     plt.xlabel('Time (sec)')
     plt.show()
 
-def make_heatmap(filename, slices=1000):
-    data = get_audio_data(filename)
-    frames_per_slice = int(data['nframes'] / slices)
-    print(frames_per_slice)
-    x = np.arange(0, slices - 1)
-    freqs = get_freqs(frames_per_slice, data['samplerate'])
-    idx = np.argsort(freqs)
-    mid = len(idx)/2
-    half_freqs = freqs[idx][mid:]
-
-    z = np.zeros([len(x), len(half_freqs),2])
-    for slice in x:
-        slice_data = get_frame_slice(data, frames_per_slice, frames_per_slice * slice)
-        ps = np.abs(np.fft.fft(slice_data))**2
-        ps_adj = np.log10(ps[idx][mid:])
-        for freq in half_freqs:
-            print("x: {0}, y: {1}, z: {2}".format(slice, freq, ps_adj[freq]))
-            z[slice][freq] = ps_adj[freq]
-    plt.clf()
-    plt.pcolormesh(x, half_freqs, z)
-    plt.show()
-
-def load_and_plot(filename):
-    data = get_audio_data(filename)
-    frames = get_channel(data)
-    pb = get_powerband(frames, data['samplerate'])
-    plt.clf()
-    print("x: {0}, y: {1}".format(pb['freq'], pb['power']))
-    plt.plot(pb['freq'], pb['power'])
-    plt.show()
+def cli():
+    parser = argparse.ArgumentParser(description='Do some badass spectral analysis.',
+                            formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument('-s', '--samples-sec', default=10., help="Number of samples to take per second.  Higher = more resolution.  Default: %(default)s")
+    parser.add_argument('-f', '--frequencies', default=30, help="Number of frequency bands to measure.  More is better.  Default: %(default)s")
+    parser.add_argument('file', help='File to load')
+    options = parser.parse_args()
+    
+    make_heatmap(options.file, options.samples_sec, options.frequencies)
+    
+if __name__ == '__main__':
+    cli()

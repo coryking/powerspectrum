@@ -3,7 +3,13 @@ powerspectrum
 
 Ghetto python spectrum analysis.
 
-This adds a command line util "plot-spectrum", which takes a .wav file and outputs a pretty looking display.
+Here is me whistling:
+![alt tag](https://raw.github.com/coryking/powerspectrum/master/img/whistle.png)
+
+Here is me talking:
+![alt tag](https://raw.github.com/coryking/powerspectrum/master/img/talking.png)
+
+This project consists of a command line util "plot-spectrum", which takes a .wav file and outputs a pretty looking display.
 
 How it works
 ------------

@@ -32,27 +32,23 @@ def get_powerband(frames, samplerate):
 
 def make_heatmap(filename, slices_per_second=10., colormap=None):
     with audio.AudioFile(filename, slices_per_second) as file:
-        freqs = get_freqs(file.frames_per_slice, file.samplerate)
-
-        idx = np.argsort(freqs)
-        mid = len(idx)/2
-        ys = freqs[idx][mid:]
+        #frequencies = file.get_sample_frequencies() #analysis.get_sample_frequencies(file.frames_per_slice, file.samplerate)
         file.printinfo()
         xs = np.fromfunction(lambda i: file.duration * i/file.nslices, [file.nslices])
-        zs = np.zeros([len(xs), len(ys)])
-        xxs, yys = np.meshgrid(xs,ys)
-        for x in range(0, file.nslices):
-            slice_data = file.read_next_slice()
-            spectral_data = analysis.analyze_sample(slice_data)
+        zs = np.zeros([len(xs), len(file.frequencies)])
 
-            zs[x] = analysis.use_db_scale(spectral_data, mid)
+        for x in range(0, file.nslices):
+            slice = file.get_next_sample()
+            zs[x] = slice.get_fft()
+
+        xxs, yys = np.meshgrid(xs,file.frequencies)
 
         plt.clf()
 
         print('yys: {0}, xxs: {1}, zs: {2}'.format(yys.shape, xxs.shape, zs.shape))
         nice_cmap = plt.get_cmap(colormap)
         plt.pcolormesh(xxs,yys,zs.transpose(), cmap=nice_cmap)
-        plt.axis([xs.min(), xs.max(), ys.min(), ys.max()])
+        plt.axis([xs.min(), xs.max(), file.frequencies.min(), file.frequencies.max()])
         plt.title('Spectrum for {0}'.format(os.path.basename(filename)))
         plt.ylabel('Frequency (Hz)')
         plt.xlabel('Time (sec)')

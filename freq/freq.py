@@ -12,17 +12,6 @@ import scikits.audiolab as al
 
 import audio
 
-def get_frame_slice(data, frames, offset=0):
-    return data['frames'][offset:offset+frames]
-
-def get_slice(data, frames, offset=0):
-    return {
-        "frames": get_frame_slice(data, frames,offset),
-        "samplerate": data['samplerate'],
-        "channels": data['channels']
-    }
-
-
 def get_freqs(frame_count, samplerate):
     return np.fft.fftfreq(frame_count, 1. / samplerate)
 
@@ -39,11 +28,6 @@ def get_powerband(frames, samplerate):
         'freq': freqs[idx][mid:],
         'power': np.log10(ps[idx][mid:])
     }
-def reshape_array(data, frequencies):
-    bw = len(data) / frequencies
-    resized_data = data.copy()
-    resized_data.resize([frequencies, bw])
-    return np.average(resized_data, axis=1)
 
 def make_heatmap(filename, slices_per_second=10., colormap=None):
     with audio.AudioData(filename, slices_per_second) as file:

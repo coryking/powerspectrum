@@ -24,6 +24,7 @@ class AudioData:
             return frame_data
 
     def printinfo(self):
+        print("Channels: %s" % self.channels)
         print("Total seconds: %s" % self.duration)
         print("Slices: %s" % self.nslices)
         print("Frames: %s" % self.nframes)

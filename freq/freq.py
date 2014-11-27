@@ -1,52 +1,24 @@
 from __future__ import division
 
 import os
-
 import argparse
 
 import numpy as np
 import matplotlib.pyplot as plt
-import scikits.audiolab as al
-
 import matplotlib.cm as cm
-from matplotlib.colors import BoundaryNorm
-from matplotlib.ticker import MaxNLocator
-from matplotlib.collections import PolyCollection
-from matplotlib.colors import colorConverter, from_levels_and_colors
 
-def get_audio_data(filename):
-    file = al.Sndfile(filename)
-    data = file.read_frames(file.nframes)
-    data_hash =  {
-        "frames": data,
-        "nframes": file.nframes,
-        "samplerate": file.samplerate,
-        "channels": file.channels
-    }
-    file.close()
-    return data_hash
+import audio
 
 def get_frame_slice(data, frames, offset=0):
     return data['frames'][offset:offset+frames]
+
 def get_slice(data, frames, offset=0):
     return {
         "frames": get_frame_slice(data, frames,offset),
         "samplerate": data['samplerate'],
         "channels": data['channels']
     }
-def get_channel(data, channel=0):
 
-    if data['channels'] == 2:
-        return data['frames'][:,channel]
-    else:
-        return data['frames']
-def get_seconds(nframes, samplerate):
-    return nframes / samplerate
-def get_frames_per_sample(nframes, samplerate, samples_per_second = 10.):
-    """Number of samples for each slice"""
-    return int(samplerate / samples_per_second)
-def get_total_samples(nframes, samplerate, samples_per_second = 10.):
-    return int(samples_per_second * (nframes / samplerate))
 
 def get_freqs(frame_count, samplerate):
     return np.fft.fftfreq(frame_count, 1. / samplerate)
@@ -71,17 +43,17 @@ def reshape_array(data, frequencies):
     return np.average(resized_data, axis=1)
 
 def make_heatmap(filename, samples_per_second=10., colormap=None):
-    data = get_audio_data(filename)
-    single_channel = get_channel(data)
-    slices = get_total_samples(data['nframes'], data['samplerate'], samples_per_second)
-    frames_per_slice = get_frames_per_sample(data['nframes'], data['samplerate'], samples_per_second)
+    data = audio.get_audio_data(filename)
+    single_channel = audio.get_data_from_channel(data)
+    slices = audio.get_total_samples(data['nframes'], data['samplerate'], samples_per_second)
+    frames_per_slice = audio.get_frames_per_sample(data['nframes'], data['samplerate'], samples_per_second)
     print(frames_per_slice)
 
     freqs = get_freqs(frames_per_slice, data['samplerate'])
     idx = np.argsort(freqs)
     mid = len(idx)/2
     ys = freqs[idx][mid:]
-    total_seconds = get_seconds(data['nframes'], data['samplerate'])
+    total_seconds = data['duration']
     print("Total seconds: %s" % total_seconds)
     xs = np.fromfunction(lambda i: total_seconds * i/slices, [slices] )
     zs = np.zeros([len(xs), len(ys)])

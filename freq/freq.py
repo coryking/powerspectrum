@@ -12,29 +12,25 @@ import scikits.audiolab as al
 
 import audio
 
-def make_heatmap(filename, slices_per_second=10., colormap=None):
-    with audio.AudioFile(filename, slices_per_second) as file:
-        #frequencies = file.get_sample_frequencies() #analysis.get_sample_frequencies(file.frames_per_slice, file.samplerate)
-        file.printinfo()
-        xs = np.fromfunction(lambda i: file.duration * i/file.nslices, [file.nslices])
-        zs = np.zeros([len(xs), len(file.frequencies)])
+def make_heatmap(file, colormap=None):
+    xs = np.fromfunction(lambda i: file.duration * i/file.nslices, [file.nslices])
+    zs = np.zeros([len(xs), len(file.frequencies)])
 
-        for x in range(0, file.nslices):
-            slice = file.get_next_sample()
-            zs[x] = slice.get_fft()
+    for x in range(0, file.nslices):
+        zs[x] = file.get_next_sample().get_fft()
 
-        xxs, yys = np.meshgrid(xs,file.frequencies)
+    xxs, yys = np.meshgrid(xs,file.frequencies)
 
-        plt.clf()
+    plt.clf()
 
-        print('yys: {0}, xxs: {1}, zs: {2}'.format(yys.shape, xxs.shape, zs.shape))
-        nice_cmap = plt.get_cmap(colormap)
-        plt.pcolormesh(xxs,yys,zs.transpose(), cmap=nice_cmap)
-        plt.axis([xs.min(), xs.max(), file.frequencies.min(), file.frequencies.max()])
-        plt.title('Spectrum for {0}'.format(os.path.basename(filename)))
-        plt.ylabel('Frequency (Hz)')
-        plt.xlabel('Time (sec)')
-        plt.show()
+    print('yys: {0}, xxs: {1}, zs: {2}'.format(yys.shape, xxs.shape, zs.shape))
+    nice_cmap = plt.get_cmap(colormap)
+    plt.pcolormesh(xxs,yys,zs.transpose(), cmap=nice_cmap)
+    plt.axis([xs.min(), xs.max(), file.frequencies.min(), file.frequencies.max()])
+    plt.title('Spectrum for {0}'.format(os.path.basename(file.filename)))
+    plt.ylabel('Frequency (Hz)')
+    plt.xlabel('Time (sec)')
+    plt.show()
 
 def cli():
     parser = argparse.ArgumentParser(description='Do some badass spectral analysis.',
@@ -43,8 +39,10 @@ def cli():
     parser.add_argument('-c', '--colormap', choices=[m for m in cm.datad.keys() if not m.endswith("_r")], default='gist_heat', help='Pick your color map')
     parser.add_argument('file', help='File to load')
     options = parser.parse_args()
-    
-    make_heatmap(options.file, options.samples_sec, colormap=options.colormap)
+
+    with audio.AudioFile(options.file, slices_per_second=options.samples_sec) as file:
+        file.printinfo()
+        make_heatmap(file, colormap=options.colormap)
     
 if __name__ == '__main__':
     cli()

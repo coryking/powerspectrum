@@ -8,6 +8,7 @@ import analysis
 
 class AudioFile:
     def __init__(self, filename, slices_per_second=10.):
+        self.filename = filename
         self.slices_per_second = slices_per_second
         self._file = al.Sndfile(filename)
         self.nframes = self._file.nframes

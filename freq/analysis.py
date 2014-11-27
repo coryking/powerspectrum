@@ -4,6 +4,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 
+def get_sample_frequencies(total_frames, sample_rate):
+    return np.fft.fftfreq(total_frames, 1. / sample_rate)
 
 
 def analyze_sample(sample_data):

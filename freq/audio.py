@@ -2,7 +2,7 @@ __author__ = 'cory'
 
 import scikits.audiolab as al
 
-class AudioData:
+class AudioFile:
     def __init__(self, filename, slices_per_second=10.):
         self.slices_per_second = slices_per_second
         self._file = al.Sndfile(filename)

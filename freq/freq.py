@@ -7,6 +7,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 
+import scikits.audiolab as al
+
+
 import audio
 
 def get_frame_slice(data, frames, offset=0):
@@ -42,7 +45,37 @@ def reshape_array(data, frequencies):
     resized_data.resize([frequencies, bw])
     return np.average(resized_data, axis=1)
 
-def make_heatmap(filename, samples_per_second=10., colormap=None):
+def make_heatmap(filename, slices_per_second=10., colormap=None):
+    with audio.AudioData(filename, slices_per_second) as file:
+        freqs = get_freqs(file.frames_per_slice, file.samplerate)
+
+        idx = np.argsort(freqs)
+        mid = len(idx)/2
+        ys = freqs[idx][mid:]
+        file.printinfo()
+        xs = np.fromfunction(lambda i: file.duration * i/file.nslices, [file.nslices])
+        zs = np.zeros([len(xs), len(ys)])
+        xxs, yys = np.meshgrid(xs,ys)
+        for x in range(0, file.nslices):
+            slice_data = file.read_next_slice() #single_channel[offset:offset + frames_per_slice]
+            A = np.fft.fft(slice_data) ** 2 #/25.5
+            mag = np.abs(np.fft.fftshift(A))
+            response = 20 * np.log10(mag[mid:])
+            reduced_ps = response
+            zs[x] = reduced_ps
+
+        plt.clf()
+
+        print('yys: {0}, xxs: {1}, zs: {2}'.format(yys.shape, xxs.shape, zs.shape))
+        nice_cmap = plt.get_cmap(colormap)
+        plt.pcolormesh(xxs,yys,zs.transpose(), cmap=nice_cmap)
+        plt.axis([xs.min(), xs.max(), ys.min(), ys.max()])
+        plt.title('Spectrum for {0}'.format(os.path.basename(filename)))
+        plt.ylabel('Frequency (Hz)')
+        plt.xlabel('Time (sec)')
+        plt.show()
+
+def _old_read_heatmap(filename, samples_per_second=10., colormap=None):
     data = audio.get_audio_data(filename)
     single_channel = audio.get_data_from_channel(data)
     slices = audio.get_total_samples(data['nframes'], data['samplerate'], samples_per_second)

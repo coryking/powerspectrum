@@ -57,7 +57,6 @@ def make_heatmap(filename, slices_per_second=10., colormap=None):
         zs = np.zeros([len(xs), len(ys)])
         xxs, yys = np.meshgrid(xs,ys)
         for x in range(0, file.nslices):
-            print("Doing slice %s" % x)
             slice_data = file.read_next_slice() #single_channel[offset:offset + frames_per_slice]
             A = np.fft.fft(slice_data) ** 2 #/25.5
             mag = np.abs(np.fft.fftshift(A))

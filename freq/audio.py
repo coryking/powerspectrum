@@ -19,7 +19,7 @@ class AudioData:
     def read_frames(self, frames, channel=0):
         frame_data = self._file.read_frames(frames)
         if self.channels == 2:
-            return frame_data[:channel]
+            return frame_data[:,channel]
         else:
             return frame_data
 

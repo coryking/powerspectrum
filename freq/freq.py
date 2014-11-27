@@ -11,24 +11,6 @@ import scikits.audiolab as al
 
 
 import audio
-import analysis
-
-def get_freqs(frame_count, samplerate):
-    return np.fft.fftfreq(frame_count, 1. / samplerate)
-
-def get_powerband(frames, samplerate):
-    ps = np.abs(np.fft.fft(frames))**2
-
-    time_step = 1. / samplerate
-    freqs = np.fft.fftfreq(frames.size, time_step)
-    idx = np.argsort(freqs)
-
-    mid = len(idx)/2
-    print("freq: {0}, ps: {1}".format(len(idx), len(ps)))
-    return {
-        'freq': freqs[idx][mid:],
-        'power': np.log10(ps[idx][mid:])
-    }
 
 def make_heatmap(filename, slices_per_second=10., colormap=None):
     with audio.AudioFile(filename, slices_per_second) as file:

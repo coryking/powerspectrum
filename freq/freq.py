@@ -11,6 +11,7 @@ import scikits.audiolab as al
 
 
 import audio
+import analysis
 
 def get_freqs(frame_count, samplerate):
     return np.fft.fftfreq(frame_count, 1. / samplerate)
@@ -41,12 +42,10 @@ def make_heatmap(filename, slices_per_second=10., colormap=None):
         zs = np.zeros([len(xs), len(ys)])
         xxs, yys = np.meshgrid(xs,ys)
         for x in range(0, file.nslices):
-            slice_data = file.read_next_slice() #single_channel[offset:offset + frames_per_slice]
-            A = np.fft.fft(slice_data) ** 2 #/25.5
-            mag = np.abs(np.fft.fftshift(A))
-            response = 20 * np.log10(mag[mid:])
-            reduced_ps = response
-            zs[x] = reduced_ps
+            slice_data = file.read_next_slice()
+            spectral_data = analysis.analyze_sample(slice_data)
+
+            zs[x] = analysis.use_db_scale(spectral_data, mid)
 
         plt.clf()
 

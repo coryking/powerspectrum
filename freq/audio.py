@@ -18,6 +18,26 @@ class AudioFile:
         self.frames_per_slice = int(self.samplerate / self.slices_per_second)
         self.nslices = int(self.slices_per_second * (self.nframes / self.samplerate))
         self.frequencies = self._get_sample_frequencies()
+
+        # The sample times
+        self._sample_times = np.fromfunction(lambda i: self.duration * i/self.nslices, [self.nslices])
+
+    @property
+    def sample_times(self):
+        """
+        An array containing the time value (in seconds) for each sample
+        :return:
+        """
+        return self._sample_times
+
+    def analyze_audio(self, channel=0):
+        sampled_slices = np.zeros([len(self.sample_times), len(self.frequencies)])
+
+        for x in range(0, self.nslices):
+            sampled_slices[x] = self.get_next_sample().get_fft(channel=channel)
+
+        return sampled_slices
+
     def _get_sample_frequencies(self):
         frequencies = analysis.get_sample_frequencies(self.frames_per_slice, self.samplerate)
         idx = np.argsort(frequencies)
@@ -40,6 +60,7 @@ class AudioFile:
         print("Frames / Slice: %s" % self.frames_per_slice)
         print("Slices / Second: %s" % self.slices_per_second)
         print("Frames / Second: %s" % self.samplerate)
+
     def __enter__(self):
         return self
 
@@ -53,13 +74,6 @@ class AudioSample:
         self._channels = channels
         self._sample_rate = sample_rate
         self._frequencies = frequencies
-
-    def get_sample_frequencies(self):
-        """
-        Return the Discrete Fourier Transform sample frequencies.
-        :return:
-        """
-        return self._frequencies
 
     def get_fft(self, channel=0, log_scale=True):
         data = self._get_chanel_data(channel)

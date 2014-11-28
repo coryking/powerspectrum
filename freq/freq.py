@@ -13,20 +13,15 @@ import scikits.audiolab as al
 import audio
 
 def make_heatmap(file, colormap=None, shading=None):
-    xs = np.fromfunction(lambda i: file.duration * i/file.nslices, [file.nslices])
-    zs = np.zeros([len(xs), len(file.frequencies)])
 
-    for x in range(0, file.nslices):
-        zs[x] = file.get_next_sample().get_fft()
-
-    xxs, yys = np.meshgrid(xs,file.frequencies)
-
+    xxs, yys = np.meshgrid(file.sample_times,file.frequencies)
+    zs = file.analyze_audio()
     plt.clf()
 
     print('yys: {0}, xxs: {1}, zs: {2}'.format(yys.shape, xxs.shape, zs.shape))
     nice_cmap = plt.get_cmap(colormap)
     plt.pcolormesh(xxs,yys,zs.transpose(), cmap=nice_cmap, shading=shading)
-    plt.axis([xs.min(), xs.max(), file.frequencies.min(), file.frequencies.max()])
+    plt.axis([file.sample_times.min(), file.sample_times.max(), file.frequencies.min(), file.frequencies.max()])
     plt.title('Spectrum for {0}'.format(os.path.basename(file.filename)))
     plt.ylabel('Frequency (Hz)')
     plt.xlabel('Time (sec)')

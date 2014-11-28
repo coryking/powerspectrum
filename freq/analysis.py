@@ -6,7 +6,7 @@ import matplotlib.cm as cm
 
 
 def get_sample_frequencies(total_frames, sample_rate):
-    return np.fft.fftfreq(total_frames, 1. / sample_rate)
+    return np.fft.rfftfreq(total_frames, 1. / sample_rate)
 
 
 def analyze_sample(sample_data):
@@ -15,8 +15,8 @@ def analyze_sample(sample_data):
     :param sample_data:
     :return:
     """
-    A = np.fft.fft(sample_data) ** 2 #/25.5
-    mag = np.abs(np.fft.fftshift(A))
+    A = np.fft.rfft(sample_data) ** 2 #/25.5
+    mag = np.abs(A) #np.fft.fftshift(A))
     return mag
 
 def use_db_scale(powerband_data, midpoint):
@@ -25,4 +25,4 @@ def use_db_scale(powerband_data, midpoint):
     :param powerband_data:
     :return:
     """
-    return 20 * np.log10(powerband_data[midpoint:])
+    return 20 * np.log10(powerband_data) #[midpoint:])

@@ -41,8 +41,8 @@ class AudioFile:
     def _get_sample_frequencies(self):
         frequencies = analysis.get_sample_frequencies(self.frames_per_slice, self.samplerate)
         idx = np.argsort(frequencies)
-        mid = len(idx)/2
-        return frequencies[idx][mid:]
+        #mid = len(idx)/2
+        return frequencies[idx] #[mid:]
 
     def get_next_sample(self):
         data = self.read_frames(self.frames_per_slice)

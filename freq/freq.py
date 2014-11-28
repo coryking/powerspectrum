@@ -3,6 +3,9 @@ from __future__ import division
 import os
 import argparse
 
+import matplotlib
+matplotlib.use('TkAgg')
+
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
@@ -14,7 +17,7 @@ import scikits.audiolab as al
 import audio
 
 def _get_plot(frequencies, sample):
-    return plt.plot(frequencies, sample,'-')
+    return plt.plot(frequencies, sample,'b-')
 
 def animate_frequency(file, args):
     samples = file.analyze_audio()
@@ -23,7 +26,7 @@ def animate_frequency(file, args):
     fig = plt.figure()
     for x in range(0, len(samples)-1):
         frame = _get_plot(file.frequencies, samples[x])
-        frames.append([frame])
+        frames.append(frame)
 
     ani = animation.ArtistAnimation(fig, frames, interval=50, blit=True, repeat_delay=1000)
     plt.show()

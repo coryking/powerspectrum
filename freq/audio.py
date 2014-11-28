@@ -65,7 +65,7 @@ class AudioSample:
         data = self._get_chanel_data(channel)
         fft_data = analysis.analyze_sample(data)
         if log_scale:
-            return analysis.use_db_scale(fft_data, len(self._frequencies)-1)
+            return analysis.use_db_scale(fft_data, len(self._frequencies))
         else:
             return fft_data
 

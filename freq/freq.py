@@ -25,7 +25,7 @@ def make_heatmap(file, colormap=None):
 
     print('yys: {0}, xxs: {1}, zs: {2}'.format(yys.shape, xxs.shape, zs.shape))
     nice_cmap = plt.get_cmap(colormap)
-    plt.pcolormesh(xxs,yys,zs.transpose(), cmap=nice_cmap)
+    plt.pcolormesh(xxs,yys,zs.transpose(), cmap=nice_cmap, shading='gouraud')
     plt.axis([xs.min(), xs.max(), file.frequencies.min(), file.frequencies.max()])
     plt.title('Spectrum for {0}'.format(os.path.basename(file.filename)))
     plt.ylabel('Frequency (Hz)')

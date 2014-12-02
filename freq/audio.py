@@ -30,19 +30,18 @@ class AudioFile:
         """
         return self._sample_times
 
-    def analyze_audio(self, channel=0):
+    def analyze_audio(self, channel=0, log_scale=False):
         sampled_slices = np.zeros([len(self.sample_times), len(self.frequencies)])
 
         for x in range(0, self.nslices):
-            sampled_slices[x] = self.get_next_sample().get_fft(channel=channel)
+            sampled_slices[x] = self.get_next_sample().get_fft(channel=channel, log_scale=log_scale)
 
         return sampled_slices
 
     def _get_sample_frequencies(self):
         frequencies = analysis.get_sample_frequencies(self.frames_per_slice, self.samplerate)
         idx = np.argsort(frequencies)
-        #mid = len(idx)/2
-        return frequencies[idx] #[mid:]
+        return frequencies[idx]
 
     def get_next_sample(self):
         data = self.read_frames(self.frames_per_slice)

@@ -20,7 +20,7 @@ def _get_plot(frequencies, sample):
     return plt.plot(frequencies, sample,'b-')
 
 def animate_frequency(file, args):
-    samples = file.analyze_audio()
+    samples = file.analyze_audio(log_scale=args.log_scale)
     frames = []
     plt.clf()
     fig = plt.figure()
@@ -32,7 +32,7 @@ def animate_frequency(file, args):
     plt.show()
 
 def plot_frequency(file, args):
-    samples = file.analyze_audio()
+    samples = file.analyze_audio(log_scale=args.log_scale)
     sample = samples[args.sample_number]
 
     plt.clf()
@@ -45,7 +45,7 @@ def plot_frequency(file, args):
 def heatmap(file, args):
 
     xxs, yys = np.meshgrid(file.sample_times,file.frequencies)
-    zs = file.analyze_audio()
+    zs = file.analyze_audio(log_scale=args.log_scale)
     plt.clf()
 
     print('yys: {0}, xxs: {1}, zs: {2}'.format(yys.shape, xxs.shape, zs.shape))
@@ -64,7 +64,7 @@ def cli():
                             formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('-s', '--samples-sec', default=15., type=float, help="Number of samples to take per second.  Higher = more resolution.  Default: %(default)s")
     parser.add_argument('-f', '--file', required=True, help='File to load')
-
+    parser.add_argument('--log-scale', action='store_true', help='Plot data using a log scale')
     subparser = parser.add_subparsers(title='Plot Type', help='What kind of graph to draw')
     parser_heatmap = subparser.add_parser('heatmap', help='Draw a heatmap of the file')
     parser_heatmap.add_argument('-c', '--colormap', choices=[m for m in cm.datad.keys() if not m.endswith("_r")], default='gist_heat', help='Pick your color map')
